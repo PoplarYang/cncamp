@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/pprof"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -16,7 +18,13 @@ func Get200(w http.ResponseWriter, r *http.Request) {
 	// write request header to response
 	if len(r.Header) > 0 {
 		for k, v := range r.Header {
-			w.Header().Add(k, v[0])
+			// write to header
+			w.Header().Add(k, strings.Join(v, ","))
+			// replace existing header
+			// w.Header().Set("content-type", "application/json")
+
+			// write to reponse
+			io.WriteString(w, fmt.Sprintf("%s: %s\n", k, strings.Join(v, ",")))
 		}
 	}
 	// write status code
