@@ -1,5 +1,3 @@
-[TOC]
-
 # 本地方式运行
 ## http server demo
 - 接收客户端 request，并将 request 中带的 header 写入 response header
@@ -19,12 +17,13 @@ go run simpleHttpServer.go -logtostderr=true
 curl 127.0.0.1:8080/healthz
 ```
 
+# 容器方式运行
+
 ## 构建镜像
 ```bash
 docker build -t httpserver:v1.0 .
 ```
 
-# 容器方式运行
 ## 运行容器
 ```bash
 docker run -P -d httpserver:v1.0
