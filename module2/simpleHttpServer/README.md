@@ -1,3 +1,6 @@
+[TOC]
+
+# 本地方式运行
 ## http server demo
 - 接收客户端 request，并将 request 中带的 header 写入 response header
 - 读取当前系统的环境变量中的 VERSION 配置，并写入 response header
@@ -6,7 +9,7 @@
 
 ## 运行程序
 ```bash
-export VERSION=0.1
+export VERSION=1.0
 go run simpleHttpServer.go -logtostderr=true
 ```
 > -logtostderr=true 开启日志输出到控制台
@@ -14,4 +17,35 @@ go run simpleHttpServer.go -logtostderr=true
 ## 测试
 ```bash
 curl 127.0.0.1:8080/healthz
+```
+
+## 构建镜像
+```bash
+docker build -t httpserver:v1.0 .
+```
+
+# 容器方式运行
+## 运行容器
+```bash
+docker run -P -d httpserver:v1.0
+```
+
+## 测试
+```bash
+# ps aux | grep httpserver
+root      820451  0.0  0.0 708292  4696 ?        Ssl  19:34   0:00 ./httpserver -logtostderr=true
+root      820859  0.0  0.0   9032   672 pts/4    S+   19:37   0:00 grep --color=auto httpserver
+
+# nsenter -t 820451 -n ip addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+60: eth0@if61: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 02:42:ac:11:00:04 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 172.17.0.4/16 brd 172.17.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+
+# curl 172.17.0.4:8080/healthz
+status ok
 ```
