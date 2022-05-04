@@ -17,12 +17,13 @@
 ~# curl 127.0.0.1:8080/healthz
 ```
 
+# 容器方式运行
+
 ## 构建镜像
 ```bash
 ~# docker build -t httpserver:v1.0 .
 ```
 
-# 容器方式运行
 ## 运行容器
 ```bash
 ~# docker run -P -d httpserver:v1.0
