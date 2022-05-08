@@ -1,8 +1,12 @@
 # build stage
 FROM golang:alpine AS build
 ADD . /src/
-RUN export GOPROXY=https://goproxy.cn && \
-    cd /src && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o httpserver
+WORKDIR /src/
+ENV GOPROXY=https://goproxy.cn
+ENV CGO_ENABLED=0
+ENV GOOS=linux
+ENV GOARCH=amd64
+RUN go build -o httpserver
 
 # final stage
 FROM busybox
