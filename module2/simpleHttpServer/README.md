@@ -21,12 +21,12 @@
 
 ## 构建镜像
 ```bash
-~# docker build -t httpserver:v1.0 .
+~# docker build -t httpserver:v1.2 .
 ```
 
 ## 运行容器
 ```bash
-~# docker run -P -d httpserver:v1.0
+~# docker run -P -d httpserver:v1.2
 ```
 
 ## 测试

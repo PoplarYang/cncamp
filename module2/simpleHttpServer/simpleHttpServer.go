@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/pprof"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/golang/glog"
@@ -68,7 +71,7 @@ func Healthz(w http.ResponseWriter, r *http.Request) {
 }
 
 func SlowRequest(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 10)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("status ok"))
 	glog.Warningf("%s %s %s %d UserAgent: %s\n", r.RemoteAddr, r.Method, r.RequestURI, 200, r.UserAgent())
@@ -79,9 +82,28 @@ type ServerConf struct {
 	// Version    string
 }
 
+func listenSignal(ctx context.Context, httpSrv *http.Server) {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(
+		sigs,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+
+	select {
+	case <-sigs:
+		timeoutCtx, _ := context.WithTimeout(ctx, 15*time.Second)
+		glog.Info("SimpleHttpServer Stopped")
+		httpSrv.Shutdown(timeoutCtx)
+	}
+}
+
 func main() {
 	flag.Parse()
 	defer glog.Flush()
+	glog.Info("SimpleHttpServer Start ...")
+
 	serverConf := ServerConf{ListenAddr: ":8080"}
 
 	http.HandleFunc("/", Get200)
@@ -96,18 +118,18 @@ func main() {
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	// TODO: kill self
+	// mux.HandleFunc("/killself", KillSelf)
 
-	s := &http.Server{
+	srv := &http.Server{
 		Addr:           serverConf.ListenAddr,
 		Handler:        nil,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
+		ReadTimeout:    30 * time.Second,
+		WriteTimeout:   30 * time.Second,
 		MaxHeaderBytes: 1 << 20, // 1M bytes
 	}
 
-	glog.Info("SimpleHttpServer Start ...")
-	err := s.ListenAndServe()
-	if err != nil {
-		glog.Fatal(err)
-	}
+	go srv.ListenAndServe()
+
+	listenSignal(context.Background(), srv)
 }

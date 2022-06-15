@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpserver-deployment
+spec:
+  selector:
+    matchLabels:
+      app: httpserver
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: httpserver
+    spec:
+      containers:
+        - name: httpserver-test
+          image: hiyang/httpserver:v1.2
+          ports:
+            - containerPort: 8080
+          env:
+            - name: VERSION
+              value: v1.2
+
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/sh", "-c", "touch /tmp/prepared"]
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "rm /tmp/prepared"]
+
+          livenessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/prepared
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          readinessProbe:
+            httpGet:
+              ### this probe will fail with 404 error code
+              ### only httpcode between 200-400 is retreated as success
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            successThreshold: 2
