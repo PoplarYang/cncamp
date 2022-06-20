@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gateway
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  tls:
+    - hosts:
+        - tree.io
+      secretName: tree-io-tls
+  rules:
+    - host: tree.io
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: httpserver-service
+                port:
+                  number: 8080
+          - path: "/httpserver(/|$)(.*)"
+            pathType: Prefix
+            backend:
+              service:
+                name: httpserver-service
+                port:
+                  number: 8080
+          - path: "/httpbin(/|$)(.*)"
+            pathType: Prefix
+            backend:
+              service:
+                name: httpbin-service
+                port:
+                  number: 8080
