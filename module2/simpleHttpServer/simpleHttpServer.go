@@ -5,15 +5,17 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
-	"net/http/pprof"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/PoplarYang/cncamp/metrics"
 	"github.com/golang/glog"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func Get200(w http.ResponseWriter, r *http.Request) {
@@ -77,6 +79,14 @@ func SlowRequest(w http.ResponseWriter, r *http.Request) {
 	glog.Warningf("%s %s %s %d UserAgent: %s\n", r.RemoteAddr, r.Method, r.RequestURI, 200, r.UserAgent())
 }
 
+func Images(w http.ResponseWriter, r *http.Request) {
+	timer := metrics.NewTimer()
+	defer timer.ObserveTotal()
+	randInt := rand.Intn(2000)
+	time.Sleep(time.Millisecond * time.Duration(randInt))
+	w.Write([]byte(fmt.Sprintf("<h1>%d<h1>", randInt)))
+}
+
 type ServerConf struct {
 	ListenAddr string
 	// Version    string
@@ -103,21 +113,25 @@ func main() {
 	flag.Parse()
 	defer glog.Flush()
 	glog.Info("SimpleHttpServer Start ...")
+	metrics.Register()
 
 	serverConf := ServerConf{ListenAddr: ":8080"}
 
-	http.HandleFunc("/", Get200)
+	// http.HandleFunc("/", Get200)
 	http.HandleFunc("/healthz", Healthz)
 	http.HandleFunc("/get/200", Get200)
 	http.HandleFunc("/get/403", Get403)
 	http.HandleFunc("/get/404", Get404)
 	http.HandleFunc("/get/500", Get500)
 	http.HandleFunc("/get/slow", SlowRequest)
-	mux := http.NewServeMux()
-	mux.HandleFunc("/debug/pprof/", pprof.Index)
-	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	// mux := http.NewServeMux()
+	http.Handle("/metrics", promhttp.Handler())
+	// mux.HandleFunc("/debug/pprof/", pprof.Index)
+	// mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	// mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	// mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+
+	http.HandleFunc("/images", Images)
 	// TODO: kill self
 	// mux.HandleFunc("/killself", KillSelf)
 

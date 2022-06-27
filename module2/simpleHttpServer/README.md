@@ -7,7 +7,7 @@
 
 ## 运行程序
 ```bash
-~# export VERSION=1.0
+~# export VERSION=1.3
 ~# go run simpleHttpServer.go -logtostderr=true
 ```
 > -logtostderr=true 开启日志输出到控制台
@@ -21,12 +21,12 @@
 
 ## 构建镜像
 ```bash
-~# docker build -t httpserver:v1.2 .
+~# docker build -t hiyang/httpserver:v1.3 .
 ```
 
 ## 运行容器
 ```bash
-~# docker run -P -d httpserver:v1.2
+~# docker run -P -d hiyang/httpserver:v1.3
 ```
 
 ## 测试
@@ -61,9 +61,7 @@ https://docs.docker.com/engine/reference/commandline/login/#credentials-store
 
 Login Succeeded
 
-~# docker tag c517a465f4ef  docker.io/hiyang/httpserver:v1
-
-~# docker push hiyang/httpserver
+~# docker push hiyang/httpserver:v1.3
 Using default tag: latest
 The push refers to repository [docker.io/hiyang/httpserver]
 tag does not exist: hiyang/httpserver:latest
