@@ -15,12 +15,12 @@ spec:
     spec:
       containers:
         - name: httpserver-test
-          image: hiyang/httpserver:v1.2
+          image: hiyang/httpserver:v1.3
           ports:
             - containerPort: 8080
           env:
             - name: VERSION
-              value: v1.2
+              value: v1.3
 
           resources:
             limits:
