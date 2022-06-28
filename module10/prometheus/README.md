@@ -32,8 +32,10 @@ kubectl get prometheuses -n prometheus-stack -oyaml
       key: prometheus-additional.yaml
       name: additional-configs
 ```
-TODO: update
-重启下prometheus pod，通过delete pod进行重启。prometheus 支持热加载，这里怎么用待更新
+prometheus 热加载
+```bash
+curl -XPOST http://10.109.144.239:9090/-/reload
+```
 
 ## 创建rbac
 ```bash
