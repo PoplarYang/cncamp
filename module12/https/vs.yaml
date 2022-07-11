@@ -1,0 +1,16 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: httpserver
+spec:
+  hosts:
+    - "httpserver.tree.io"
+  gateways:
+    - httpserver-gw
+  http:
+    - route:
+        - destination:
+            host: httpsvc.httpserver.svc.cluster.local
+            port:
+              number: 8080
